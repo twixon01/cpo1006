@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  microservice1:
+    container_name: 'auth_service'
+    build:
+      context: ./airlines 2
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  microservice2:
+    container_name: 'order_service'
+    build:
+      context: ./airlinesBuy
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: 'postgres:15'
+    restart: always
+    container_name: 'java-postgres'
+    environment:
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=postgres'
+      - 'POSTGRES_DB=airlines'
+      - 'POSTGRES_DB=ordersdb'
+      - 'POSTGRES_HOST_AUTH_METHOD=md5'
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -q -U postgres" ]
+      interval: 5s
+      retries: 20
+    volumes:
+      - ./migrations/initdbs.sql:/docker-entrypoint-initdb.d/initdbs.sql

@@ -1,0 +1,2 @@
+CREATE DATABASE airlines;
+CREATE DATABASE ordersdb;
